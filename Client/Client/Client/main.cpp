@@ -170,8 +170,8 @@ int main()
 	//close file
 	file.close();
 
-	/*closesocket(ClientSocket);
-	WSACleanup();*/
+	closesocket(ClientSocket);
+	WSACleanup();
 
 	return 1;
 
