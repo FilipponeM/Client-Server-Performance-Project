@@ -31,32 +31,32 @@ struct DataPacket {
 
 int main()
 {
-	////starts Winsock DLLs
-	//WSADATA wsaData;
-	//if ((WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0) {
-	//	return 0;
-	//}
+	//starts Winsock DLLs
+	WSADATA wsaData;
+	if ((WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0) {
+		return 0;
+	}
 
-	////initializes socket. SOCK_STREAM: TCP
-	//SOCKET ClientSocket;
-	//ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	//if (ClientSocket == INVALID_SOCKET) {
-	//	WSACleanup();
-	//	return 0;
-	//}
+	//initializes socket. SOCK_STREAM: TCP
+	SOCKET ClientSocket;
+	ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (ClientSocket == INVALID_SOCKET) {
+		WSACleanup();
+		return 0;
+	}
 
-	////Connect socket to specified server
-	//sockaddr_in SvrAddr;
-	//SvrAddr.sin_family = AF_INET;						//Address family type itnernet
-	//SvrAddr.sin_port = htons(27000);					//port (host to network conversion)
-	//SvrAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	//IP address
+	//Connect socket to specified server
+	sockaddr_in SvrAddr;
+	SvrAddr.sin_family = AF_INET;						//Address family type itnernet
+	SvrAddr.sin_port = htons(27000);					//port (host to network conversion)
+	SvrAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	//IP address
 
 
-	//if ((connect(ClientSocket, (struct sockaddr*)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR) {
-	//	closesocket(ClientSocket);
-	//	WSACleanup();
-	//	return 0;
-	//}
+	if ((connect(ClientSocket, (struct sockaddr*)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR) {
+		closesocket(ClientSocket);
+		WSACleanup();
+		return 0;
+	}
 
 	DataPacket datapacket;
 
@@ -90,8 +90,8 @@ int main()
 		
 	}
 	else {
-		/*closesocket(ClientSocket);
-		WSACleanup();*/
+		closesocket(ClientSocket);
+		WSACleanup();
 		return -1;
 	}
 
@@ -160,24 +160,18 @@ int main()
 			cerr << "Insufficient data in line: " << line << endl;
 		}
 
-
-
-
-
-
-	}
-
 		//packet the data
 		//send data to server
 
-	
+		send(ClientSocket, (char*)&datapacket, sizeof(datapacket), 0);
+
+	}
 
 	//close file
 	file.close();
 
 	/*closesocket(ClientSocket);
 	WSACleanup();*/
-
 
 	return 1;
 
