@@ -1,4 +1,0 @@
-﻿  main.cpp
-C:\Users\filip\Desktop\client-server-elliott\Client\Client\Client\main.cpp(133,40): warning C4101: 'e': unreferenced local variable
-C:\Users\filip\Desktop\client-server-elliott\Client\Client\Client\main.cpp(148,40): warning C4101: 'e': unreferenced local variable
-  Client.vcxproj -> C:\Users\filip\Desktop\client-server-elliott\Client\Client\x64\Debug\Client.exe

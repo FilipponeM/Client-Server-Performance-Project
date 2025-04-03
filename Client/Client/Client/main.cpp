@@ -1,180 +1,122 @@
 // Elliott Group Assignment 2
 // Client
 
-
-
 #define _CRT_SECURE_NO_WARNINGS
 #include <windows.networking.sockets.h>
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <cerrno>
-#include <cstdlib>  
+#include <cstdlib>
 #include <ctime>
+#include <cstring>
 
 using namespace std;
 
-//define the packet
-//something like
-struct DataPacket {
-
-	unsigned int clientID; //random int
-	string fuelLevel; //ml 
-	string timeLeft; //sec
-
+struct DataPacket
+{
+	unsigned int clientID;
+	char fuelLevel[16]; // Enough for float string
+	char timestamp[18]; // Enough for full timestamp string (e.g., "3_3_2023 15:54:21")
 };
 
-
-int main()
+int main(int argc, char *argv[])
 {
-	//starts Winsock DLLs
 	WSADATA wsaData;
-	if ((WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0) {
-		return 0;
+	if ((WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0)
+	{
+		cerr << "WSAStartup failed." << endl;
+		return 1;
 	}
 
-	//initializes socket. SOCK_STREAM: TCP
-	SOCKET ClientSocket;
-	ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (ClientSocket == INVALID_SOCKET) {
+	SOCKET ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (ClientSocket == INVALID_SOCKET)
+	{
 		WSACleanup();
-		return 0;
+		cerr << "Failed to create socket." << endl;
+		return 1;
 	}
 
-	//Connect socket to specified server
+	string serverIP = (argc > 1) ? argv[1] : "127.0.0.1";
+
 	sockaddr_in SvrAddr;
-	SvrAddr.sin_family = AF_INET;						//Address family type itnernet
-	SvrAddr.sin_port = htons(27000);					//port (host to network conversion)
-	SvrAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	//IP address
+	SvrAddr.sin_family = AF_INET;
+	SvrAddr.sin_port = htons(27001);
+	SvrAddr.sin_addr.s_addr = inet_addr(serverIP.c_str());
 
-
-	if ((connect(ClientSocket, (struct sockaddr*)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR) {
+	if ((connect(ClientSocket, (struct sockaddr *)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR)
+	{
 		closesocket(ClientSocket);
 		WSACleanup();
-		return 0;
+		cerr << "Connection failed." << endl;
+		return 1;
 	}
 
 	DataPacket datapacket;
 
-	//set a unique id number 
-	datapacket.clientID = 1;
+	srand((unsigned)time(0));
+	datapacket.clientID = (rand() % 10 + 1) + GetCurrentProcessId(); // Stronger random ID using rand(1 ~ 10) + process ID)
 
-	//open file randomly for testing/dont know what he wants
-	srand(static_cast<unsigned>(time(0)));
-	int roll = rand() % 4 + 1;
+	int roll = rand() % 4 + 1; // Randomly pick a file 1 to 4
+	string filename;
 
-	string name;
-
-	if (roll == 1) {
-		cout << "1" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\katl-kefd-B737-700.txt";
-		
-	}
-	else if (roll == 2) {
-		cout << "2" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_2023_3_12 14_56_40.txt";
-		
-	}
-	else if (roll == 3) {
-		cout << "3" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_2023_3_12 16_26_4.txt";
-		
-	}
-	else if (roll == 4) {
-		cout << "4" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_czba-cykf-pa28-w2_2023_3_1 12_31_27.txt";
-		
-	}
-	else {
-		closesocket(ClientSocket);
-		WSACleanup();
-		return -1;
+	switch (roll)
+	{
+	case 1:
+		filename = "Data Files/katl-kefd-B737-700.txt";
+		break;
+	case 2:
+		filename = "Data Files/Telem_2023_3_12 14_56_40.txt";
+		break;
+	case 3:
+		filename = "Data Files/Telem_2023_3_12 16_26_4.txt";
+		break;
+	case 4:
+		filename = "Data Files/Telem_czba-cykf-pa28-w2_2023_3_1 12_31_27.txt";
+		break;
+	default:
+		cerr << "Invalid roll." << endl;
+		return 1;
 	}
 
-	//testing
-	cout << name << endl;
-
-
-	ifstream file(name);
-	if (!file.is_open()) {
-		cerr << "Failed to open file: " << name << endl;
-		cerr << "Error: " << strerror(errno) << endl;
-		return 1;  // Exit the program if the file cannot be opened
+	ifstream file(filename);
+	if (!file.is_open())
+	{
+		cerr << "Failed to open file: " << filename << endl;
+		return 1;
 	}
 
 	string line;
-	
-	bool isFirstLine = true; 
+	bool isFirstLine = true;
 
-	//while loop till file is done
-	while (getline(file, line)) {
-
-		vector<string> values;
-		stringstream ss(line);
-		string value;
-		
-
-		// Split the line by commas
-		while (getline(ss, value, ',')) {
-			values.push_back(value);
-		}
-
-		cout << values.size() << endl;
-
-		//check for 3 because of the extra comma in the txt files
-		if (values.size() == 3) {
-			try {
-
-				datapacket.timeLeft = values[0];
-				datapacket.fuelLevel = values[1];
-				  
-				cout << "Time Level: " << datapacket.timeLeft
-					<< ", Fuel Left: " << datapacket.fuelLevel << endl;
-			}
-			catch (const std::invalid_argument& e) {
-				cerr << "Invalid data in line: " << line << endl;
-			}
-
-
-		}
-		else if (values.size() == 4 && isFirstLine==true) {
-			try {
-
-				datapacket.timeLeft = values[1];
-				datapacket.fuelLevel = values[2];
-
-				cout << "Time Level: " << datapacket.timeLeft
-					<< ", Fuel Left: " << datapacket.fuelLevel << endl;
-			}
-			catch (const std::invalid_argument& e) {
-				cerr << "Invalid data in line: " << line << endl;
-			}
-
+	while (getline(file, line))
+	{
+		if (isFirstLine)
+		{
 			isFirstLine = false;
-		}
-		else {
-			cerr << "Insufficient data in line: " << line << endl;
+			continue; // Skip header
 		}
 
-		//packet the data
-		//send data to server
+		stringstream ss(line);
+		string timeStr, fuelStr;
+		getline(ss, timeStr, ',');
+		getline(ss, fuelStr, ',');
 
-		send(ClientSocket, (char*)&datapacket, sizeof(datapacket), 0);
+		strncpy(datapacket.timestamp, timeStr.c_str(), sizeof(datapacket.timestamp));
+		strncpy(datapacket.fuelLevel, fuelStr.c_str(), sizeof(datapacket.fuelLevel));
 
+		cout << "Sent packet: ID = " << datapacket.clientID
+			 << ", Fuel = " << datapacket.fuelLevel
+			 << ", Time = " << datapacket.timestamp << endl;
+
+		send(ClientSocket, (char *)&datapacket, sizeof(datapacket), 0);
+		Sleep(500);
 	}
 
-	//close file
 	file.close();
-
 	closesocket(ClientSocket);
 	WSACleanup();
-
-	return 1;
-
+	return 0;
 }
-
-
