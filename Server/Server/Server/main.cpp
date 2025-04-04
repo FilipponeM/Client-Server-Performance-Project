@@ -15,7 +15,7 @@ struct DataPacket
 {
     unsigned int clientID; // random int
     char fuelLevel[16];    // fuel level in gallons
-    char timestamp[18];    // room for 17-char timestamp + '\0' (format: "3_3_2023 15:54:21")
+    char timestamp[20];    // Increased allocation to stop printing garbage
 };
 
 void HandleClient(SOCKET clientSocket)
