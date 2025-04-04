@@ -19,7 +19,7 @@ struct DataPacket
 {
 	unsigned int clientID;
 	char fuelLevel[16]; // Enough for float string
-	char timestamp[18]; // Enough for full timestamp string (e.g., "3_3_2023 15:54:21")
+	char timestamp[20]; // Increased allocation to stop printing garbage 
 };
 
 int main(int argc, char *argv[])
@@ -104,8 +104,11 @@ int main(int argc, char *argv[])
 		getline(ss, timeStr, ',');
 		getline(ss, fuelStr, ',');
 
-		strncpy(datapacket.timestamp, timeStr.c_str(), sizeof(datapacket.timestamp));
-		strncpy(datapacket.fuelLevel, fuelStr.c_str(), sizeof(datapacket.fuelLevel));
+		strncpy(datapacket.timestamp, timeStr.c_str(), sizeof(datapacket.timestamp) - 1);
+		datapacket.timestamp[sizeof(datapacket.timestamp) - 1] = '\0';
+
+		strncpy(datapacket.fuelLevel, fuelStr.c_str(), sizeof(datapacket.fuelLevel) - 1);
+		datapacket.fuelLevel[sizeof(datapacket.fuelLevel) - 1] = '\0';
 
 		cout << "Sent packet: ID = " << datapacket.clientID
 			 << ", Fuel = " << datapacket.fuelLevel
