@@ -1,2 +1,4 @@
 ﻿  main.cpp
+C:\Users\filip\Desktop\client-server-elliott\Server\Server\Server\main.cpp(61,27): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\filip\Desktop\client-server-elliott\Server\Server\Server\main.cpp(78,29): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   Server.vcxproj -> C:\Users\filip\Desktop\client-server-elliott\Server\Server\x64\Debug\Server.exe

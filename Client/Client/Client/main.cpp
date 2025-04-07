@@ -23,8 +23,8 @@ using namespace std;
 struct DataPacket {
 
 	unsigned int clientID; //random int
-	string fuelLevel; //ml 
-	string timeLeft; //sec
+	char fuelLevel[24]; //ml 
+	char timeLeft[24]; //sec
 
 };
 
@@ -48,7 +48,7 @@ int main()
 	//Connect socket to specified server
 	sockaddr_in SvrAddr;
 	SvrAddr.sin_family = AF_INET;						//Address family type itnernet
-	SvrAddr.sin_port = htons(27000);					//port (host to network conversion)
+	SvrAddr.sin_port = htons(27001);					//port (host to network conversion)
 	SvrAddr.sin_addr.s_addr = inet_addr("127.0.0.1");	//IP address
 
 
@@ -61,32 +61,30 @@ int main()
 	DataPacket datapacket;
 
 	//set a unique id number 
-	datapacket.clientID = 1;
+	srand((unsigned)time(0));
+	datapacket.clientID = (rand() % 10 + 1) + GetCurrentProcessId(); // Stronger random ID using rand(1 ~ 10) + process ID)
 
-	//open file randomly for testing/dont know what he wants
-	srand(static_cast<unsigned>(time(0)));
-	int roll = rand() % 4 + 1;
-
-	string name;
+	int roll = rand() % 4 + 1; // Randomly pick a file 1 to 4
+	string filename;
 
 	if (roll == 1) {
 		cout << "1" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\katl-kefd-B737-700.txt";
+		filename = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\katl-kefd-B737-700.txt";
 		
 	}
 	else if (roll == 2) {
 		cout << "2" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_2023_3_12 14_56_40.txt";
+		filename = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_2023_3_12 14_56_40.txt";
 		
 	}
 	else if (roll == 3) {
 		cout << "3" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_2023_3_12 16_26_4.txt";
+		filename = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_2023_3_12 16_26_4.txt";
 		
 	}
 	else if (roll == 4) {
 		cout << "4" << endl;
-		name = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_czba-cykf-pa28-w2_2023_3_1 12_31_27.txt";
+		filename = "C:\\Users\\filip\\Desktop\\client-server-elliott\\Data Files\\Telem_czba-cykf-pa28-w2_2023_3_1 12_31_27.txt";
 		
 	}
 	else {
@@ -96,12 +94,12 @@ int main()
 	}
 
 	//testing
-	cout << name << endl;
+	cout << filename << endl;
 
 
-	ifstream file(name);
+	ifstream file(filename);
 	if (!file.is_open()) {
-		cerr << "Failed to open file: " << name << endl;
+		cerr << "Failed to open file: " << filename << endl;
 		cerr << "Error: " << strerror(errno) << endl;
 		return 1;  // Exit the program if the file cannot be opened
 	}
@@ -129,8 +127,11 @@ int main()
 		if (values.size() == 3) {
 			try {
 
-				datapacket.timeLeft = values[0];
-				datapacket.fuelLevel = values[1];
+				strncpy(datapacket.timeLeft, values[0].c_str(), sizeof(datapacket.timeLeft) - 1);
+				datapacket.timeLeft[sizeof(datapacket.timeLeft) - 1] = '\0';
+
+				strncpy(datapacket.fuelLevel, values[1].c_str(), sizeof(datapacket.fuelLevel) - 1);
+				datapacket.fuelLevel[sizeof(datapacket.fuelLevel) - 1] = '\0';
 				  
 				cout << "Time Level: " << datapacket.timeLeft
 					<< ", Fuel Left: " << datapacket.fuelLevel << endl;
@@ -144,8 +145,11 @@ int main()
 		else if (values.size() == 4 && isFirstLine==true) {
 			try {
 
-				datapacket.timeLeft = values[1];
-				datapacket.fuelLevel = values[2];
+				strncpy(datapacket.timeLeft, values[1].c_str(), sizeof(datapacket.timeLeft) - 1);
+				datapacket.timeLeft[sizeof(datapacket.timeLeft) - 1] = '\0';
+
+				strncpy(datapacket.fuelLevel, values[2].c_str(), sizeof(datapacket.fuelLevel) - 1);
+				datapacket.fuelLevel[sizeof(datapacket.fuelLevel) - 1] = '\0';
 
 				cout << "Time Level: " << datapacket.timeLeft
 					<< ", Fuel Left: " << datapacket.fuelLevel << endl;
@@ -170,8 +174,9 @@ int main()
 	//close file
 	file.close();
 
-	/*closesocket(ClientSocket);
-	WSACleanup();*/
+	//clean up socket use
+	closesocket(ClientSocket);
+	WSACleanup();
 
 	return 1;
 
