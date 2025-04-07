@@ -1,0 +1,9 @@
+﻿  main.cpp
+C:\Users\filip\Desktop\client-server-elliott\Server\Server\Server\main.cpp(66,27): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\filip\Desktop\client-server-elliott\Server\Server\Server\main.cpp(83,29): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+  Generating code
+  1 of 188 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Server.vcxproj -> C:\Users\filip\Desktop\client-server-elliott\Server\Server\x64\Release\Server.exe

@@ -17,8 +17,8 @@ using namespace std;
 struct DataPacket {
 
     unsigned int clientID; //random int
-    char fuelLevel[24];    // fuel level in gallons
-    char timestamp[24]; //sec
+    char fuelLevel[20];    // fuel level in gallons
+    char timestamp[20]; //sec
 
 };
 
@@ -40,7 +40,7 @@ void HandleClient(SOCKET clientSocket)
     auto parseTimeToSeconds = [](const char* timeStr) -> int
         {
             int day, month, year, hour, minute, second;
-            if (sscanf(timeStr, "%d_%d_%d %d:%d:%d", &day, &month, &year, &hour, &minute, &second) == 6)
+            if (sscanf(timeStr, " %d_%d_%d %d:%d:%d", &day, &month, &year, &hour, &minute, &second) == 6)
                 return hour * 3600 + minute * 60 + second;
             else
             {
@@ -50,11 +50,16 @@ void HandleClient(SOCKET clientSocket)
         };
 
     while (true)
-    {
+    {   
+        //memset(&packet, 0, sizeof(packet));
+
         int bytesReceived = recv(clientSocket, (char*)&packet, sizeof(DataPacket), 0);
+
+        cout << " Received: " << bytesReceived;
 
         if (bytesReceived <= 0)
             break;
+        
 
         clientID = packet.clientID;
 
@@ -62,7 +67,7 @@ void HandleClient(SOCKET clientSocket)
         int currentTime = parseTimeToSeconds(packet.timestamp);
 
         if (currentTime == -1)
-            continue;
+            break;
 
         // Capture first valid time/fuel
         if (firstTime == -1)
@@ -90,19 +95,17 @@ void HandleClient(SOCKET clientSocket)
         lastFuel = currentFuel;
         lastTime = currentTime;
 
-        cout << "Client ID: " << clientID
-            << " | Fuel: " << currentFuel
-            << " | Timestamp: " << packet.timestamp << endl;
+
     }
 
     //for now i want this to just show the clients id eery time that client sneds data
-    char buffer[1024] = { 0 };
+    //char buffer[1024] = { 0 };
     float avgGalPerSec = (count > 0) ? totalConsumption / count : 0.0f;
     float avgGph = avgGalPerSec * 3600.0f;
     float fuelUsed = (firstFuel >= 0 && lastFuel >= 0) ? (firstFuel - lastFuel) : 0.0f;
     int flightDurationSec = (firstTime >= 0 && lastTime >= 0) ? (lastTime - firstTime) : 0;
 
-    cout << "sent id" << endl;
+    //cout << "sent id" << endl;
     ofstream result("FlightResults.csv", ios::app);
     result << fixed << setprecision(6);
     result << "ClientID," << clientID
@@ -113,7 +116,7 @@ void HandleClient(SOCKET clientSocket)
 
     closesocket(clientSocket);
 
-    cout << "Connection with Client-" << clientID << " closed." << endl;
+    cout << "\nConnection with Client-" << clientID << " closed." << endl;
     cout << "Total Flight Duration: " << flightDurationSec << " seconds" << endl;
     cout << "Total Fuel Used: " << fuelUsed << " gallons" << endl;
     cout << "Average Consumption: " << avgGph << " gallons/hour" << endl;
@@ -139,13 +142,13 @@ int main() {
     cout << "Waiting for client connections...\n";
 
     while (true) {
-        cout << "-1";
+        //cout << "-1";
         ConnectionSocket = accept(ServerSocket, NULL, NULL);
         if (ConnectionSocket == INVALID_SOCKET) continue;
 
-        cout << "Client Connected!\n";
+        //cout << "Client Connected!\n";
         thread clientThread(HandleClient, ConnectionSocket);
-        
+
         clientThread.detach();
 
     }

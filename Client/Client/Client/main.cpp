@@ -23,8 +23,8 @@ using namespace std;
 struct DataPacket {
 
 	unsigned int clientID; //random int
-	char fuelLevel[24]; //ml 
-	char timeLeft[24]; //sec
+	char fuelLevel[20]; //ml 
+	char timeLeft[20]; //sec
 
 };
 
